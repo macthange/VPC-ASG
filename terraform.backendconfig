@@ -1,0 +1,5 @@
+dynamodb_table = "my-vpc-master-terraform-state-lock"    
+encrypt        = true
+bucket         = "my-vpc-master-terraform-state-lock-us-east-1""
+region         = "us-east-1"
+key            = "my-project.tfstate"

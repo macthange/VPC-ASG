@@ -1,0 +1,2107 @@
+
+RFT+UX500332@DESKTOP-5E7TN26 MINGW64 /c/LINT/DXC/vpc/scripts
+$ sh tf_plan.sh
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+module.networking.data.aws_iam_account_alias.current: Refreshing state...
+data.aws_ami.golden_image: Refreshing state...
+module.s3_bucket.data.aws_region.current: Refreshing state...
+data.aws_region.current: Refreshing state...
+module.networking.data.aws_caller_identity.current: Refreshing state...
+module.web_srv.data.aws_region.current: Refreshing state...
+module.web_srv.data.aws_caller_identity.current: Refreshing state...
+module.pg_rds.data.aws_iam_policy_document.enhanced_monitoring: Refreshing state...
+module.pg_rds.data.aws_caller_identity.current: Refreshing state...
+module.kms_key.data.aws_iam_account_alias.current: Refreshing state...
+module.networking.data.aws_availability_zones.available: Refreshing state...
+module.web_srv.data.aws_iam_account_alias.current: Refreshing state...
+module.securit_group.data.aws_caller_identity.current: Refreshing state...
+module.s3_bucket.data.aws_iam_account_alias.current: Refreshing state...
+module.kms_key.data.aws_caller_identity.current: Refreshing state...
+module.securit_group.data.aws_iam_account_alias.current: Refreshing state...
+data.aws_iam_account_alias.current: Refreshing state...
+module.securit_group.data.aws_region.current: Refreshing state...
+module.s3_bucket.data.aws_caller_identity.current: Refreshing state...
+data.aws_caller_identity.current: Refreshing state...
+module.app_srv.data.aws_iam_account_alias.current: Refreshing state...
+module.pg_rds.data.aws_iam_account_alias.current: Refreshing state...
+module.pg_rds.data.aws_region.current: Refreshing state...
+module.kms_key.data.aws_region.current: Refreshing state...
+module.app_srv.data.aws_region.current: Refreshing state...
+module.networking.data.aws_region.current: Refreshing state...
+module.app_srv.data.aws_caller_identity.current: Refreshing state...
+module.kms_key.data.aws_iam_policy_document.ssm_key: Refreshing state...
+
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # random_password.password will be created
+  + resource "random_password" "password" {
+      + id               = (known after apply)
+      + length           = 16
+      + lower            = true
+      + min_lower        = 0
+      + min_numeric      = 0
+      + min_special      = 0
+      + min_upper        = 0
+      + number           = true
+      + override_special = "_%@"
+      + result           = (sensitive value)
+      + special          = true
+      + upper            = true
+    }
+
+  # module.app_srv.data.aws_iam_policy_document.kms_use will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "kms_use"  {
+      + id   = (known after apply)
+      + json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "kms:Decrypt",
+              + "kms:DescribeKey",
+              + "kms:Encrypt",
+              + "kms:GenerateDataKey*",
+              + "kms:ReEncrypt*",
+            ]
+          + effect    = "Allow"
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "AllowKMSUse"
+        }
+    }
+
+  # module.app_srv.aws_autoscaling_attachment.target["tcp"] will be created
+  + resource "aws_autoscaling_attachment" "target" {
+      + alb_target_group_arn   = (known after apply)
+      + autoscaling_group_name = "my-project-nlb-asg-dev-use1"
+      + id                     = (known after apply)
+    }
+
+  # module.app_srv.aws_autoscaling_group.app will be created
+  + resource "aws_autoscaling_group" "app" {
+      + arn                       = (known after apply)
+      + availability_zones        = (known after apply)
+      + capacity_rebalance        = true
+      + default_cooldown          = (known after apply)
+      + desired_capacity          = 12
+      + enabled_metrics           = [
+          + "GroupDesiredCapacity",
+          + "GroupInServiceInstances",
+          + "GroupMaxSize",
+          + "GroupMinSize",
+          + "GroupTotalInstances",
+        ]
+      + force_delete              = false
+      + force_delete_warm_pool    = false
+      + health_check_grace_period = 300
+      + health_check_type         = (known after apply)
+      + id                        = (known after apply)
+      + max_size                  = 15
+      + metrics_granularity       = "1Minute"
+      + min_size                  = 12
+      + name                      = "my-project-nlb-asg-dev-use1"
+      + name_prefix               = (known after apply)
+      + protect_from_scale_in     = false
+      + service_linked_role_arn   = (known after apply)
+      + vpc_zone_identifier       = (known after apply)
+      + wait_for_capacity_timeout = "10m"
+
+      + mixed_instances_policy {
+          + instances_distribution {
+              + on_demand_allocation_strategy            = (known after apply)
+              + on_demand_base_capacity                  = 1
+              + on_demand_percentage_above_base_capacity = 25
+              + spot_allocation_strategy                 = "capacity-optimized"
+              + spot_instance_pools                      = (known after apply)
+            }
+
+          + launch_template {
+              + launch_template_specification {
+                  + launch_template_id   = (known after apply)
+                  + launch_template_name = (known after apply)
+                  + version              = "$Default"
+                }
+
+              + override {
+                  + instance_type     = "c4.large"
+                  + weighted_capacity = "3"
+                }
+              + override {
+                  + instance_type     = "c3.large"
+                  + weighted_capacity = "2"
+                }
+            }
+        }
+
+      + warm_pool {
+          + max_group_prepared_capacity = 10
+          + min_size                    = 1
+          + pool_state                  = "Stopped"
+        }
+    }
+
+  # module.app_srv.aws_autoscaling_policy.app_policy_down will be created
+  + resource "aws_autoscaling_policy" "app_policy_down" {
+      + adjustment_type         = "ChangeInCapacity"
+      + arn                     = (known after apply)
+      + autoscaling_group_name  = "my-project-nlb-asg-dev-use1"
+      + cooldown                = 300
+      + id                      = (known after apply)
+      + metric_aggregation_type = (known after apply)
+      + name                    = "app_policy_down"
+      + policy_type             = "SimpleScaling"
+      + scaling_adjustment      = -1
+    }
+
+  # module.app_srv.aws_autoscaling_policy.app_policy_up will be created
+  + resource "aws_autoscaling_policy" "app_policy_up" {
+      + adjustment_type         = "ChangeInCapacity"
+      + arn                     = (known after apply)
+      + autoscaling_group_name  = "my-project-nlb-asg-dev-use1"
+      + cooldown                = 300
+      + id                      = (known after apply)
+      + metric_aggregation_type = (known after apply)
+      + name                    = "app_policy_up"
+      + policy_type             = "SimpleScaling"
+      + scaling_adjustment      = 1
+    }
+
+  # module.app_srv.aws_cloudwatch_metric_alarm.app_cpu_alarm_down will be created
+  + resource "aws_cloudwatch_metric_alarm" "app_cpu_alarm_down" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "This metric monitor EC2 instance CPU utilization"
+      + alarm_name                            = "app_cpu_alarm_down"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "LessThanOrEqualToThreshold"
+      + dimensions                            = {
+          + "AutoScalingGroupName" = "my-project-nlb-asg-dev-use1"
+        }
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/EC2"
+      + period                                = 120
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 10
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.app_srv.aws_cloudwatch_metric_alarm.app_cpu_alarm_up will be created
+  + resource "aws_cloudwatch_metric_alarm" "app_cpu_alarm_up" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "This metric monitor EC2 instance CPU utilization"
+      + alarm_name                            = "app_cpu_alarm_up"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanOrEqualToThreshold"
+      + dimensions                            = {
+          + "AutoScalingGroupName" = "my-project-nlb-asg-dev-use1"
+        }
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/EC2"
+      + period                                = 120
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 60
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.app_srv.aws_iam_policy.kms_use will be created
+  + resource "aws_iam_policy" "kms_use" {
+      + arn         = (known after apply)
+      + description = "Policy to allow use of KMS Key"
+      + id          = (known after apply)
+      + name        = "my-project-nlb-iam-dev-use1-kms"
+      + path        = "/"
+      + policy      = (known after apply)
+      + policy_id   = (known after apply)
+      + tags_all    = (known after apply)
+    }
+
+  # module.app_srv.aws_iam_role.asg will be created
+  + resource "aws_iam_role" "asg" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = [
+                              + "lambda.amazonaws.com",
+                              + "ec2.amazonaws.com",
+                              + "s3.amazonaws.com",
+                              + "sns.amazonaws.com",
+                              + "events.amazonaws.com",
+                            ]
+                        }
+                      + Sid       = ""
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "my-project-nlb-iam-dev-use1"
+      + path                  = "/"
+      + tags                  = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlb-iam-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all              = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlb-iam-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy {
+          + name   = (known after apply)
+          + policy = (known after apply)
+        }
+    }
+
+  # module.app_srv.aws_iam_role_policy.lambda will be created
+  + resource "aws_iam_role_policy" "lambda" {
+      + id     = (known after apply)
+      + name   = "my-project-nlb-iam-dev-use1-log"
+      + policy = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "logs:CreateLogGroup",
+                          + "logs:CreateLogStream",
+                          + "logs:PutLogEvents",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:logs:*:*:*"
+                    },
+                  + {
+                      + Action   = [
+                          + "s3:*",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "route53:GetHostedZone",
+                          + "autoscaling:DescribeTags",
+                          + "autoscaling:DescribeAutoScalingGroups",
+                          + "autoscaling:CompleteLifecycleAction",
+                          + "ec2:DescribeInstances",
+                          + "ec2:CreateNetworkInterface",
+                          + "ec2:DescribeNetworkInterfaces",
+                          + "ec2:DeleteNetworkInterface",
+                          + "ec2:DescribeSecurityGroups",
+                          + "ec2:DescribeSubnets",
+                          + "ec2:DescribeVpcs",
+                          + "ec2:CreateTags",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "route53:ChangeResourceRecordSets",
+                          + "route53:ListResourceRecordSets",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:route53:::hostedzone/*"
+                    },
+                  + {
+                      + Action   = [
+                          + "dynamodb:*",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "sqs:*",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + role   = "my-project-nlb-iam-dev-use1"
+    }
+
+  # module.app_srv.aws_iam_role_policy_attachment.kms_use will be created
+  + resource "aws_iam_role_policy_attachment" "kms_use" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "my-project-nlb-iam-dev-use1"
+    }
+
+  # module.app_srv.aws_launch_template.app_lt will be created
+  + resource "aws_launch_template" "app_lt" {
+      + arn                    = (known after apply)
+      + default_version        = (known after apply)
+      + ebs_optimized          = "true"
+      + id                     = (known after apply)
+      + image_id               = "ami-019082bb0be03754e"
+      + instance_type          = "c5.large"
+      + latest_version         = (known after apply)
+      + name                   = (known after apply)
+      + name_prefix            = "my-project-nlb-lt-dev-use1-"
+      + tags_all               = (known after apply)
+      + user_data              = <<~EOT
+            #!/bin/sh
+            ##### setup sudoer #####
+            region_code=use1
+            sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl enable amazon-ssm-agent
+            sudo systemctl start amazon-ssm-agent
+
+
+
+        EOT
+      + vpc_security_group_ids = (known after apply)
+
+      + block_device_mappings {
+          + device_name = "/dev/sda1"
+
+          + ebs {
+              + iops        = (known after apply)
+              + throughput  = (known after apply)
+              + volume_size = 20
+              + volume_type = (known after apply)
+            }
+        }
+
+      + iam_instance_profile {
+          + name = "my-project-nlb-iam-dev-use1"
+        }
+
+      + metadata_options {
+          + http_endpoint               = (known after apply)
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = (known after apply)
+        }
+    }
+
+  # module.app_srv.aws_lb.app will be created
+  + resource "aws_lb" "app" {
+      + arn                              = (known after apply)
+      + arn_suffix                       = (known after apply)
+      + dns_name                         = (known after apply)
+      + enable_cross_zone_load_balancing = true
+      + enable_deletion_protection       = false
+      + id                               = (known after apply)
+      + internal                         = true
+      + ip_address_type                  = (known after apply)
+      + load_balancer_type               = "network"
+      + name                             = "my-project-nlbdev-use1"
+      + security_groups                  = (known after apply)
+      + subnets                          = (known after apply)
+      + tags                             = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlbdev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                         = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlbdev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                           = (known after apply)
+      + zone_id                          = (known after apply)
+
+      + access_logs {
+          + bucket  = (known after apply)
+          + enabled = true
+          + prefix  = "nlb-dev"
+        }
+
+      + subnet_mapping {
+          + allocation_id        = (known after apply)
+          + ipv6_address         = (known after apply)
+          + outpost_id           = (known after apply)
+          + private_ipv4_address = (known after apply)
+          + subnet_id            = (known after apply)
+        }
+    }
+
+  # module.app_srv.aws_lb_listener.app["tcp"] will be created
+  + resource "aws_lb_listener" "app" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + load_balancer_arn = (known after apply)
+      + port              = 6005
+      + protocol          = "TCP"
+      + ssl_policy        = (known after apply)
+      + tags              = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all          = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+
+      + default_action {
+          + order            = (known after apply)
+          + target_group_arn = (known after apply)
+          + type             = "forward"
+        }
+    }
+
+  # module.app_srv.aws_lb_target_group.app["tcp"] will be created
+  + resource "aws_lb_target_group" "app" {
+      + arn                                = (known after apply)
+      + arn_suffix                         = (known after apply)
+      + deregistration_delay               = 300
+      + id                                 = (known after apply)
+      + lambda_multi_value_headers_enabled = false
+      + load_balancing_algorithm_type      = (known after apply)
+      + name                               = (known after apply)
+      + port                               = 6005
+      + preserve_client_ip                 = (known after apply)
+      + protocol                           = "TCP"
+      + protocol_version                   = (known after apply)
+      + proxy_protocol_v2                  = false
+      + slow_start                         = 0
+      + tags                               = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                           = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-nlb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + target_type                        = "instance"
+      + vpc_id                             = (known after apply)
+
+      + health_check {
+          + enabled             = (known after apply)
+          + healthy_threshold   = (known after apply)
+          + interval            = (known after apply)
+          + matcher             = (known after apply)
+          + path                = (known after apply)
+          + port                = (known after apply)
+          + protocol            = (known after apply)
+          + timeout             = (known after apply)
+          + unhealthy_threshold = (known after apply)
+        }
+
+      + stickiness {
+          + cookie_duration = (known after apply)
+          + cookie_name     = (known after apply)
+          + enabled         = (known after apply)
+          + type            = (known after apply)
+        }
+    }
+
+  # module.kms_key.aws_kms_alias.kms will be created
+  + resource "aws_kms_alias" "kms" {
+      + arn            = (known after apply)
+      + id             = (known after apply)
+      + name           = "alias/my-project-kms-key-dev-use1"
+      + name_prefix    = (known after apply)
+      + target_key_arn = (known after apply)
+      + target_key_id  = (known after apply)
+    }
+
+  # module.kms_key.aws_kms_key.kms will be created
+  + resource "aws_kms_key" "kms" {
+      + arn                                = (known after apply)
+      + bypass_policy_lockout_safety_check = false
+      + customer_master_key_spec           = "SYMMETRIC_DEFAULT"
+      + deletion_window_in_days            = 30
+      + description                        = "KMS key for ctp-udbor-common"
+      + enable_key_rotation                = true
+      + id                                 = (known after apply)
+      + is_enabled                         = true
+      + key_id                             = (known after apply)
+      + key_usage                          = "ENCRYPT_DECRYPT"
+      + policy                             = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "kms:*"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + AWS = [
+                              + "arn:aws:iam::769591988430:role/human-role/a250468-Developer",
+                              + "arn:aws:iam::769591988430:root",
+                            ]
+                        }
+                      + Resource  = "*"
+                      + Sid       = "Enable IAM User Permissions"
+                    },
+                  + {
+                      + Action    = [
+                          + "kms:GenerateDataKey",
+                          + "kms:Decrypt",
+                        ]
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "s3.amazonaws.com"
+                        }
+                      + Resource  = "*"
+                      + Sid       = "Enable s3 Principal"
+                    },
+                  + {
+                      + Action    = [
+                          + "kms:GenerateDataKey",
+                          + "kms:Decrypt",
+                        ]
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "events.amazonaws.com"
+                        }
+                      + Resource  = "*"
+                      + Sid       = "Enable s3 events"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + tags                               = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-kms-key-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                           = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-kms-key-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+    }
+
+  # module.networking.aws_db_subnet_group.rds_subnet[0] will be created
+  + resource "aws_db_subnet_group" "rds_subnet" {
+      + arn         = (known after apply)
+      + description = "Managed by Terraform"
+      + id          = (known after apply)
+      + name        = "rds_db_subnet-1"
+      + name_prefix = (known after apply)
+      + subnet_ids  = (known after apply)
+      + tags        = {
+          + "Name" = "rds_db_subnet-1"
+        }
+      + tags_all    = {
+          + "Name" = "rds_db_subnet-1"
+        }
+    }
+
+  # module.networking.aws_db_subnet_group.rds_subnet[1] will be created
+  + resource "aws_db_subnet_group" "rds_subnet" {
+      + arn         = (known after apply)
+      + description = "Managed by Terraform"
+      + id          = (known after apply)
+      + name        = "rds_db_subnet-2"
+      + name_prefix = (known after apply)
+      + subnet_ids  = (known after apply)
+      + tags        = {
+          + "Name" = "rds_db_subnet-2"
+        }
+      + tags_all    = {
+          + "Name" = "rds_db_subnet-2"
+        }
+    }
+
+  # module.networking.aws_eip.nat_eip[0] will be created
+  + resource "aws_eip" "nat_eip" {
+      + allocation_id        = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = (known after apply)
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + tags                 = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-eip-{count.index+1}"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all             = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-eip-{count.index+1}"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc                  = true
+    }
+
+  # module.networking.aws_eip.nat_eip[1] will be created
+  + resource "aws_eip" "nat_eip" {
+      + allocation_id        = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = (known after apply)
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + tags                 = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-eip-{count.index+1}"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all             = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-eip-{count.index+1}"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc                  = true
+    }
+
+  # module.networking.aws_internet_gateway.igw will be created
+  + resource "aws_internet_gateway" "igw" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Environment" = "dev"
+          + "Name"        = "aws_internet_gateway"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all = {
+          + "Environment" = "dev"
+          + "Name"        = "aws_internet_gateway"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # module.networking.aws_nat_gateway.nat_gw[0] will be created
+  + resource "aws_nat_gateway" "nat_gw" {
+      + allocation_id        = (known after apply)
+      + connectivity_type    = "public"
+      + id                   = (known after apply)
+      + network_interface_id = (known after apply)
+      + private_ip           = (known after apply)
+      + public_ip            = (known after apply)
+      + subnet_id            = (known after apply)
+      + tags                 = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-gateway-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all             = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-gateway-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+    }
+
+  # module.networking.aws_nat_gateway.nat_gw[1] will be created
+  + resource "aws_nat_gateway" "nat_gw" {
+      + allocation_id        = (known after apply)
+      + connectivity_type    = "public"
+      + id                   = (known after apply)
+      + network_interface_id = (known after apply)
+      + private_ip           = (known after apply)
+      + public_ip            = (known after apply)
+      + subnet_id            = (known after apply)
+      + tags                 = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-gateway-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all             = {
+          + "Environment" = "dev"
+          + "Name"        = "nat-gateway-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+    }
+
+  # module.networking.aws_route.database_nat_gateway[0] will be created
+  + resource "aws_route" "database_nat_gateway" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + nat_gateway_id         = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.networking.aws_route.database_nat_gateway[1] will be created
+  + resource "aws_route" "database_nat_gateway" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + nat_gateway_id         = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.networking.aws_route.private_nat_gateway[0] will be created
+  + resource "aws_route" "private_nat_gateway" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + nat_gateway_id         = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.networking.aws_route.private_nat_gateway[1] will be created
+  + resource "aws_route" "private_nat_gateway" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + nat_gateway_id         = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.networking.aws_route.public_internet_gateway will be created
+  + resource "aws_route" "public_internet_gateway" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + gateway_id             = (known after apply)
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.networking.aws_route_table.database will be created
+  + resource "aws_route_table" "database" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = (known after apply)
+      + tags             = {
+          + "Environment" = "dev"
+          + "Name"        = "database-route-table"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "Name"        = "database-route-table"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.networking.aws_route_table.private will be created
+  + resource "aws_route_table" "private" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = (known after apply)
+      + tags             = {
+          + "Environment" = "dev"
+          + "Name"        = "private-route-table"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "Name"        = "private-route-table"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.networking.aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = (known after apply)
+      + tags             = {
+          + "Environment" = "dev"
+          + "Name"        = "public-route-table"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "Name"        = "public-route-table"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.networking.aws_route_table_association.database[0] will be created
+  + resource "aws_route_table_association" "database" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.networking.aws_route_table_association.database[1] will be created
+  + resource "aws_route_table_association" "database" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.networking.aws_route_table_association.private[0] will be created
+  + resource "aws_route_table_association" "private" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.networking.aws_route_table_association.private[1] will be created
+  + resource "aws_route_table_association" "private" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.networking.aws_route_table_association.public[0] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.networking.aws_route_table_association.public[1] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.networking.aws_security_group.database will be created
+  + resource "aws_security_group" "database" {
+      + arn                    = (known after apply)
+      + description            = "database security group to allow inbound/outbound from the VPC"
+      + egress                 = [
+          + {
+              + cidr_blocks      = []
+              + description      = ""
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = true
+              + to_port          = 0
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + description      = ""
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = true
+              + to_port          = 0
+            },
+        ]
+      + name                   = "dev-database-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Environment" = "dev"
+        }
+      + tags_all               = {
+          + "Environment" = "dev"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.networking.aws_subnet.database_subnet[0] will be created
+  + resource "aws_subnet" "database_subnet" {
+      + arn                             = (known after apply)
+      + assign_ipv6_address_on_creation = false
+      + availability_zone               = "us-east-1a"
+      + availability_zone_id            = (known after apply)
+      + cidr_block                      = "10.1.4.0/24"
+      + id                              = (known after apply)
+      + ipv6_cidr_block_association_id  = (known after apply)
+      + map_public_ip_on_launch         = false
+      + owner_id                        = (known after apply)
+      + tags                            = {
+          + "Environment" = "dev"
+          + "Name"        = "database-subnet-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                        = {
+          + "Environment" = "dev"
+          + "Name"        = "database-subnet-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                          = (known after apply)
+    }
+
+  # module.networking.aws_subnet.database_subnet[1] will be created
+  + resource "aws_subnet" "database_subnet" {
+      + arn                             = (known after apply)
+      + assign_ipv6_address_on_creation = false
+      + availability_zone               = "us-east-1b"
+      + availability_zone_id            = (known after apply)
+      + cidr_block                      = "10.1.5.0/24"
+      + id                              = (known after apply)
+      + ipv6_cidr_block_association_id  = (known after apply)
+      + map_public_ip_on_launch         = false
+      + owner_id                        = (known after apply)
+      + tags                            = {
+          + "Environment" = "dev"
+          + "Name"        = "database-subnet-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                        = {
+          + "Environment" = "dev"
+          + "Name"        = "database-subnet-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                          = (known after apply)
+    }
+
+  # module.networking.aws_subnet.private_subnet[0] will be created
+  + resource "aws_subnet" "private_subnet" {
+      + arn                             = (known after apply)
+      + assign_ipv6_address_on_creation = false
+      + availability_zone               = "us-east-1a"
+      + availability_zone_id            = (known after apply)
+      + cidr_block                      = "10.1.2.0/24"
+      + id                              = (known after apply)
+      + ipv6_cidr_block_association_id  = (known after apply)
+      + map_public_ip_on_launch         = false
+      + owner_id                        = (known after apply)
+      + tags                            = {
+          + "Environment" = "dev"
+          + "Name"        = "private-subnet-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                        = {
+          + "Environment" = "dev"
+          + "Name"        = "private-subnet-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                          = (known after apply)
+    }
+
+  # module.networking.aws_subnet.private_subnet[1] will be created
+  + resource "aws_subnet" "private_subnet" {
+      + arn                             = (known after apply)
+      + assign_ipv6_address_on_creation = false
+      + availability_zone               = "us-east-1b"
+      + availability_zone_id            = (known after apply)
+      + cidr_block                      = "10.1.3.0/24"
+      + id                              = (known after apply)
+      + ipv6_cidr_block_association_id  = (known after apply)
+      + map_public_ip_on_launch         = false
+      + owner_id                        = (known after apply)
+      + tags                            = {
+          + "Environment" = "dev"
+          + "Name"        = "private-subnet-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                        = {
+          + "Environment" = "dev"
+          + "Name"        = "private-subnet-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                          = (known after apply)
+    }
+
+  # module.networking.aws_subnet.public_subnet[0] will be created
+  + resource "aws_subnet" "public_subnet" {
+      + arn                             = (known after apply)
+      + assign_ipv6_address_on_creation = false
+      + availability_zone               = "us-east-1a"
+      + availability_zone_id            = (known after apply)
+      + cidr_block                      = "10.1.0.0/24"
+      + id                              = (known after apply)
+      + ipv6_cidr_block_association_id  = (known after apply)
+      + map_public_ip_on_launch         = false
+      + owner_id                        = (known after apply)
+      + tags                            = {
+          + "Environment" = "dev"
+          + "Name"        = "public_subnet-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                        = {
+          + "Environment" = "dev"
+          + "Name"        = "public_subnet-1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                          = (known after apply)
+    }
+
+  # module.networking.aws_subnet.public_subnet[1] will be created
+  + resource "aws_subnet" "public_subnet" {
+      + arn                             = (known after apply)
+      + assign_ipv6_address_on_creation = false
+      + availability_zone               = "us-east-1b"
+      + availability_zone_id            = (known after apply)
+      + cidr_block                      = "10.1.1.0/24"
+      + id                              = (known after apply)
+      + ipv6_cidr_block_association_id  = (known after apply)
+      + map_public_ip_on_launch         = false
+      + owner_id                        = (known after apply)
+      + tags                            = {
+          + "Environment" = "dev"
+          + "Name"        = "public_subnet-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                        = {
+          + "Environment" = "dev"
+          + "Name"        = "public_subnet-2"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                          = (known after apply)
+    }
+
+  # module.networking.aws_vpc.vpc will be created
+  + resource "aws_vpc" "vpc" {
+      + arn                              = (known after apply)
+      + assign_generated_ipv6_cidr_block = false
+      + cidr_block                       = "10.1.0.0/16"
+      + default_network_acl_id           = (known after apply)
+      + default_route_table_id           = (known after apply)
+      + default_security_group_id        = (known after apply)
+      + dhcp_options_id                  = (known after apply)
+      + enable_classiclink               = (known after apply)
+      + enable_classiclink_dns_support   = (known after apply)
+      + enable_dns_hostnames             = (known after apply)
+      + enable_dns_support               = true
+      + id                               = (known after apply)
+      + instance_tenancy                 = "default"
+      + ipv6_association_id              = (known after apply)
+      + ipv6_cidr_block                  = (known after apply)
+      + main_route_table_id              = (known after apply)
+      + owner_id                         = (known after apply)
+      + tags                             = {
+          + "Environment" = "dev"
+          + "Name"        = "dev-vpc"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                         = {
+          + "Environment" = "dev"
+          + "Name"        = "dev-vpc"
+          + "Owner"       = "my-Project@example.com"
+        }
+    }
+
+  # module.pg_rds.aws_cloudwatch_metric_alarm.database_cpu will be created
+  + resource "aws_cloudwatch_metric_alarm" "database_cpu" {
+      + actions_enabled                       = true
+      + alarm_description                     = "Database server CPU utilization"
+      + alarm_name                            = "alarmUnknownDatabaseServerCPUUtilization-mytestdb-dev"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/RDS"
+      + period                                = 300
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 75
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.pg_rds.aws_cloudwatch_metric_alarm.database_disk_free will be created
+  + resource "aws_cloudwatch_metric_alarm" "database_disk_free" {
+      + actions_enabled                       = true
+      + alarm_description                     = "Database server free storage space"
+      + alarm_name                            = "alarmUnknownDatabaseServerFreeStorageSpace-mytestdb-dev"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "LessThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "FreeStorageSpace"
+      + namespace                             = "AWS/RDS"
+      + period                                = 60
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 5000000000
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.pg_rds.aws_cloudwatch_metric_alarm.database_disk_queue will be created
+  + resource "aws_cloudwatch_metric_alarm" "database_disk_queue" {
+      + actions_enabled                       = true
+      + alarm_description                     = "Database server disk queue depth"
+      + alarm_name                            = "alarmUnknownDatabaseServerDiskQueueDepth-mytestdb-dev"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "DiskQueueDepth"
+      + namespace                             = "AWS/RDS"
+      + period                                = 60
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 10
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.pg_rds.aws_cloudwatch_metric_alarm.database_memory_free will be created
+  + resource "aws_cloudwatch_metric_alarm" "database_memory_free" {
+      + actions_enabled                       = true
+      + alarm_description                     = "Database server freeable memory"
+      + alarm_name                            = "alarmUnknownDatabaseServerFreeableMemory-mytestdb-dev"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "LessThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 1
+      + id                                    = (known after apply)
+      + metric_name                           = "FreeableMemory"
+      + namespace                             = "AWS/RDS"
+      + period                                = 60
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 128000000
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.pg_rds.aws_db_instance.postgresql will be created
+  + resource "aws_db_instance" "postgresql" {
+      + address                               = (known after apply)
+      + allocated_storage                     = 32
+      + apply_immediately                     = (known after apply)
+      + arn                                   = (known after apply)
+      + auto_minor_version_upgrade            = true
+      + availability_zone                     = (known after apply)
+      + backup_retention_period               = 30
+      + backup_window                         = "04:00-04:30"
+      + ca_cert_identifier                    = (known after apply)
+      + character_set_name                    = (known after apply)
+      + copy_tags_to_snapshot                 = false
+      + db_subnet_group_name                  = (known after apply)
+      + delete_automated_backups              = true
+      + deletion_protection                   = false
+      + enabled_cloudwatch_logs_exports       = [
+          + "postgresql",
+          + "upgrade",
+        ]
+      + endpoint                              = (known after apply)
+      + engine                                = "postgres"
+      + engine_version                        = "11.5"
+      + final_snapshot_identifier             = "terraform-aws-postgresql-rds-snapshot"
+      + hosted_zone_id                        = (known after apply)
+      + id                                    = (known after apply)
+      + identifier                            = "mytestdb-dev"
+      + identifier_prefix                     = (known after apply)
+      + instance_class                        = "db.t3.micro"
+      + iops                                  = 0
+      + kms_key_id                            = (known after apply)
+      + latest_restorable_time                = (known after apply)
+      + license_model                         = (known after apply)
+      + maintenance_window                    = "sun:04:30-sun:05:30"
+      + monitoring_interval                   = 0
+      + monitoring_role_arn                   = (known after apply)
+      + multi_az                              = true
+      + name                                  = "mytestdb-dev"
+      + nchar_character_set_name              = (known after apply)
+      + option_group_name                     = (known after apply)
+      + parameter_group_name                  = "default.postgres11"
+      + password                              = (sensitive value)
+      + performance_insights_enabled          = false
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = 5432
+      + publicly_accessible                   = false
+      + replicas                              = (known after apply)
+      + resource_id                           = (known after apply)
+      + skip_final_snapshot                   = true
+      + snapshot_identifier                   = (known after apply)
+      + status                                = (known after apply)
+      + storage_encrypted                     = false
+      + storage_type                          = "gp2"
+      + tags                                  = {
+          + "Environment" = "Unknown"
+          + "Name"        = "DatabaseServer"
+          + "Project"     = "Unknown"
+        }
+      + tags_all                              = {
+          + "Environment" = "Unknown"
+          + "Name"        = "DatabaseServer"
+          + "Project"     = "Unknown"
+        }
+      + timezone                              = (known after apply)
+      + username                              = "dbadmin"
+      + vpc_security_group_ids                = (known after apply)
+    }
+
+  # module.pg_rds.aws_iam_role.enhanced_monitoring will be created
+  + resource "aws_iam_role" "enhanced_monitoring" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "monitoring.rds.amazonaws.com"
+                        }
+                      + Sid       = ""
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "my-project-pg-rds-monitor-dev-use1"
+      + path                  = "/"
+      + tags_all              = (known after apply)
+      + unique_id             = (known after apply)
+
+      + inline_policy {
+          + name   = (known after apply)
+          + policy = (known after apply)
+        }
+    }
+
+  # module.pg_rds.aws_iam_role_policy_attachment.enhanced_monitoring will be created
+  + resource "aws_iam_role_policy_attachment" "enhanced_monitoring" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+      + role       = "my-project-pg-rds-monitor-dev-use1"
+    }
+
+  # module.s3_bucket.aws_s3_bucket.s3_bucket_default[0] will be created
+  + resource "aws_s3_bucket" "s3_bucket_default" {
+      + acceleration_status         = (known after apply)
+      + acl                         = "private"
+      + arn                         = (known after apply)
+      + bucket                      = "my-project-s3-log-bucket-dev-use1"
+      + bucket_domain_name          = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags                        = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-s3-log-bucket-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                    = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-s3-log-bucket-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + server_side_encryption_configuration {
+          + rule {
+              + apply_server_side_encryption_by_default {
+                  + kms_master_key_id = (known after apply)
+                  + sse_algorithm     = "aws:kms"
+                }
+            }
+        }
+
+      + versioning {
+          + enabled    = (known after apply)
+          + mfa_delete = (known after apply)
+        }
+    }
+
+  # module.s3_bucket.aws_s3_bucket_policy.s3_bucket will be created
+  + resource "aws_s3_bucket_policy" "s3_bucket" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+      + policy = (known after apply)
+    }
+
+  # module.securit_group.aws_security_group.admin_sg will be created
+  + resource "aws_security_group" "admin_sg" {
+      + arn                    = (known after apply)
+      + description            = "admin Security Group allowing ssh & rdp inbound access"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 22
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 22
+            },
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 3389
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 3389
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "-ssh-sg-dev-use1"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "-ssh-sg-dev-use1"
+        }
+      + tags_all               = {
+          + "Name" = "-ssh-sg-dev-use1"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.securit_group.aws_security_group.alb_sg will be created
+  + resource "aws_security_group" "alb_sg" {
+      + arn                    = (known after apply)
+      + description            = "ALB Security group"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 8080
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "http"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 8080
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 443
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "https"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 443
+            },
+        ]
+      + name                   = "-alb-sg-dev-use1"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "-alb-sg-dev-use1"
+        }
+      + tags_all               = {
+          + "Name" = "-alb-sg-dev-use1"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.securit_group.aws_security_group.app_sg will be created
+  + resource "aws_security_group" "app_sg" {
+      + arn                    = (known after apply)
+      + description            = "Application Security group"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 5432
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 5432
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 6005
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "https"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 6005
+            },
+        ]
+      + name                   = "-app-sg-dev-use1"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "-app-sg-dev-use1"
+        }
+      + tags_all               = {
+          + "Name" = "-app-sg-dev-use1"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.securit_group.aws_security_group.db_sg will be created
+  + resource "aws_security_group" "db_sg" {
+      + arn                    = (known after apply)
+      + description            = "database Security group"
+      + egress                 = (known after apply)
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 5432
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 5432
+            },
+        ]
+      + name                   = "-db-sg-dev-use1"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "-db-sg-dev-use1"
+        }
+      + tags_all               = {
+          + "Name" = "-db-sg-dev-use1"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.securit_group.aws_security_group.outbound_sg will be created
+  + resource "aws_security_group" "outbound_sg" {
+      + arn                    = (known after apply)
+      + description            = "Security Group allowing all outbound access"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "-outbound-sg-dev-use1"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "-outbound-sg-dev-use1"
+        }
+      + tags_all               = {
+          + "Name" = "-outbound-sg-dev-use1"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.securit_group.aws_security_group.web_sg will be created
+  + resource "aws_security_group" "web_sg" {
+      + arn                    = (known after apply)
+      + description            = "web Security group"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 6005
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "http"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 6005
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = ""
+              + from_port        = 8080
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "https"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 8080
+            },
+        ]
+      + name                   = "-web-sg-dev-use1"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "-web-sg-dev-use1"
+        }
+      + tags_all               = {
+          + "Name" = "-web-sg-dev-use1"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.web_srv.data.aws_iam_policy_document.kms_use will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "kms_use"  {
+      + id   = (known after apply)
+      + json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "kms:Decrypt",
+              + "kms:DescribeKey",
+              + "kms:Encrypt",
+              + "kms:GenerateDataKey*",
+              + "kms:ReEncrypt*",
+            ]
+          + effect    = "Allow"
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "AllowKMSUse"
+        }
+    }
+
+  # module.web_srv.aws_autoscaling_attachment.target["https"] will be created
+  + resource "aws_autoscaling_attachment" "target" {
+      + alb_target_group_arn   = (known after apply)
+      + autoscaling_group_name = "my-project-albdev-use1"
+      + id                     = (known after apply)
+    }
+
+  # module.web_srv.aws_autoscaling_group.web will be created
+  + resource "aws_autoscaling_group" "web" {
+      + arn                       = (known after apply)
+      + availability_zones        = (known after apply)
+      + capacity_rebalance        = true
+      + default_cooldown          = (known after apply)
+      + desired_capacity          = 12
+      + enabled_metrics           = [
+          + "GroupDesiredCapacity",
+          + "GroupInServiceInstances",
+          + "GroupMaxSize",
+          + "GroupMinSize",
+          + "GroupTotalInstances",
+        ]
+      + force_delete              = false
+      + force_delete_warm_pool    = false
+      + health_check_grace_period = 300
+      + health_check_type         = (known after apply)
+      + id                        = (known after apply)
+      + max_size                  = 15
+      + metrics_granularity       = "1Minute"
+      + min_size                  = 12
+      + name                      = "my-project-alb-asg-dev-use1"
+      + name_prefix               = (known after apply)
+      + protect_from_scale_in     = false
+      + service_linked_role_arn   = (known after apply)
+      + vpc_zone_identifier       = (known after apply)
+      + wait_for_capacity_timeout = "10m"
+
+      + mixed_instances_policy {
+          + instances_distribution {
+              + on_demand_allocation_strategy            = (known after apply)
+              + on_demand_base_capacity                  = 1
+              + on_demand_percentage_above_base_capacity = 25
+              + spot_allocation_strategy                 = "capacity-optimized"
+              + spot_instance_pools                      = (known after apply)
+            }
+
+          + launch_template {
+              + launch_template_specification {
+                  + launch_template_id   = (known after apply)
+                  + launch_template_name = (known after apply)
+                  + version              = "$Default"
+                }
+
+              + override {
+                  + instance_type     = "c4.large"
+                  + weighted_capacity = "3"
+                }
+              + override {
+                  + instance_type     = "c3.large"
+                  + weighted_capacity = "2"
+                }
+            }
+        }
+
+      + warm_pool {
+          + max_group_prepared_capacity = 10
+          + min_size                    = 1
+          + pool_state                  = "Stopped"
+        }
+    }
+
+  # module.web_srv.aws_autoscaling_policy.web_policy_down will be created
+  + resource "aws_autoscaling_policy" "web_policy_down" {
+      + adjustment_type         = "ChangeInCapacity"
+      + arn                     = (known after apply)
+      + autoscaling_group_name  = "my-project-alb-asg-dev-use1"
+      + cooldown                = 300
+      + id                      = (known after apply)
+      + metric_aggregation_type = (known after apply)
+      + name                    = "web_policy_down"
+      + policy_type             = "SimpleScaling"
+      + scaling_adjustment      = -1
+    }
+
+  # module.web_srv.aws_autoscaling_policy.web_policy_up will be created
+  + resource "aws_autoscaling_policy" "web_policy_up" {
+      + adjustment_type         = "ChangeInCapacity"
+      + arn                     = (known after apply)
+      + autoscaling_group_name  = "my-project-alb-asg-dev-use1"
+      + cooldown                = 300
+      + id                      = (known after apply)
+      + metric_aggregation_type = (known after apply)
+      + name                    = "app_policy_up"
+      + policy_type             = "SimpleScaling"
+      + scaling_adjustment      = 1
+    }
+
+  # module.web_srv.aws_cloudwatch_metric_alarm.web_cpu_alarm_down will be created
+  + resource "aws_cloudwatch_metric_alarm" "web_cpu_alarm_down" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "This metric monitor EC2 instance CPU utilization"
+      + alarm_name                            = "web_cpu_alarm_down"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "LessThanOrEqualToThreshold"
+      + dimensions                            = {
+          + "AutoScalingGroupName" = "my-project-alb-asg-dev-use1"
+        }
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/EC2"
+      + period                                = 120
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 10
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.web_srv.aws_cloudwatch_metric_alarm.web_cpu_alarm_up will be created
+  + resource "aws_cloudwatch_metric_alarm" "web_cpu_alarm_up" {
+      + actions_enabled                       = true
+      + alarm_actions                         = (known after apply)
+      + alarm_description                     = "This metric monitor EC2 instance CPU utilization"
+      + alarm_name                            = "web_cpu_alarm_up"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanOrEqualToThreshold"
+      + dimensions                            = {
+          + "AutoScalingGroupName" = "my-project-alb-asg-dev-use1"
+        }
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/EC2"
+      + period                                = 120
+      + statistic                             = "Average"
+      + tags_all                              = (known after apply)
+      + threshold                             = 60
+      + treat_missing_data                    = "missing"
+    }
+
+  # module.web_srv.aws_iam_policy.kms_use will be created
+  + resource "aws_iam_policy" "kms_use" {
+      + arn         = (known after apply)
+      + description = "Policy to allow use of KMS Key"
+      + id          = (known after apply)
+      + name        = "my-project-alb-iam-dev-use1-kms"
+      + path        = "/"
+      + policy      = (known after apply)
+      + policy_id   = (known after apply)
+      + tags_all    = (known after apply)
+    }
+
+  # module.web_srv.aws_iam_role.asg will be created
+  + resource "aws_iam_role" "asg" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = [
+                              + "lambda.amazonaws.com",
+                              + "ec2.amazonaws.com",
+                              + "s3.amazonaws.com",
+                              + "sns.amazonaws.com",
+                              + "events.amazonaws.com",
+                            ]
+                        }
+                      + Sid       = ""
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "my-project-alb-iam-dev-use1"
+      + path                  = "/"
+      + tags                  = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-alb-iam-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all              = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-alb-iam-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy {
+          + name   = (known after apply)
+          + policy = (known after apply)
+        }
+    }
+
+  # module.web_srv.aws_iam_role_policy.lambda will be created
+  + resource "aws_iam_role_policy" "lambda" {
+      + id     = (known after apply)
+      + name   = "my-project-alb-iam-dev-use1-log"
+      + policy = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "logs:CreateLogGroup",
+                          + "logs:CreateLogStream",
+                          + "logs:PutLogEvents",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:logs:*:*:*"
+                    },
+                  + {
+                      + Action   = [
+                          + "s3:*",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "route53:GetHostedZone",
+                          + "autoscaling:DescribeTags",
+                          + "autoscaling:DescribeAutoScalingGroups",
+                          + "autoscaling:CompleteLifecycleAction",
+                          + "ec2:DescribeInstances",
+                          + "ec2:CreateNetworkInterface",
+                          + "ec2:DescribeNetworkInterfaces",
+                          + "ec2:DeleteNetworkInterface",
+                          + "ec2:DescribeSecurityGroups",
+                          + "ec2:DescribeSubnets",
+                          + "ec2:DescribeVpcs",
+                          + "ec2:CreateTags",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "route53:ChangeResourceRecordSets",
+                          + "route53:ListResourceRecordSets",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:route53:::hostedzone/*"
+                    },
+                  + {
+                      + Action   = [
+                          + "dynamodb:*",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                  + {
+                      + Action   = [
+                          + "sqs:*",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "*"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + role   = "my-project-alb-iam-dev-use1"
+    }
+
+  # module.web_srv.aws_iam_role_policy_attachment.kms_use will be created
+  + resource "aws_iam_role_policy_attachment" "kms_use" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "my-project-alb-iam-dev-use1"
+    }
+
+  # module.web_srv.aws_launch_template.web_lt will be created
+  + resource "aws_launch_template" "web_lt" {
+      + arn                    = (known after apply)
+      + default_version        = (known after apply)
+      + ebs_optimized          = "true"
+      + id                     = (known after apply)
+      + image_id               = "ami-019082bb0be03754e"
+      + instance_type          = "c5.large"
+      + latest_version         = (known after apply)
+      + name                   = (known after apply)
+      + name_prefix            = "my-project-alb-lt-dev-use1-"
+      + tags_all               = (known after apply)
+      + user_data              = <<~EOT
+            #!/bin/sh
+            ##### setup sudoer #####
+            region_code=use1
+            sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl enable amazon-ssm-agent
+            sudo systemctl start amazon-ssm-agent
+
+
+
+        EOT
+      + vpc_security_group_ids = (known after apply)
+
+      + block_device_mappings {
+          + device_name = "/dev/sda1"
+
+          + ebs {
+              + iops        = (known after apply)
+              + throughput  = (known after apply)
+              + volume_size = 20
+              + volume_type = (known after apply)
+            }
+        }
+
+      + iam_instance_profile {
+          + name = "my-project-alb-iam-dev-use1"
+        }
+
+      + metadata_options {
+          + http_endpoint               = (known after apply)
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = (known after apply)
+        }
+    }
+
+  # module.web_srv.aws_lb.web will be created
+  + resource "aws_lb" "web" {
+      + arn                        = (known after apply)
+      + arn_suffix                 = (known after apply)
+      + dns_name                   = (known after apply)
+      + drop_invalid_header_fields = false
+      + enable_deletion_protection = false
+      + enable_http2               = true
+      + id                         = (known after apply)
+      + idle_timeout               = 60
+      + internal                   = false
+      + ip_address_type            = "ipv4"
+      + load_balancer_type         = "application"
+      + name                       = "my-project-albdev-use1"
+      + security_groups            = (known after apply)
+      + subnets                    = (known after apply)
+      + tags                       = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-albdev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                   = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-albdev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + vpc_id                     = (known after apply)
+      + zone_id                    = (known after apply)
+
+      + access_logs {
+          + bucket  = (known after apply)
+          + enabled = true
+          + prefix  = "alb-dev"
+        }
+
+      + subnet_mapping {
+          + allocation_id        = (known after apply)
+          + ipv6_address         = (known after apply)
+          + outpost_id           = (known after apply)
+          + private_ipv4_address = (known after apply)
+          + subnet_id            = (known after apply)
+        }
+    }
+
+  # module.web_srv.aws_lb_listener.web["https"] will be created
+  + resource "aws_lb_listener" "web" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + load_balancer_arn = (known after apply)
+      + port              = 443
+      + protocol          = "HTTPS"
+      + ssl_policy        = (known after apply)
+      + tags              = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-alb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all          = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-alb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+
+      + default_action {
+          + order            = (known after apply)
+          + target_group_arn = (known after apply)
+          + type             = "forward"
+        }
+    }
+
+  # module.web_srv.aws_lb_target_group.web["https"] will be created
+  + resource "aws_lb_target_group" "web" {
+      + arn                                = (known after apply)
+      + arn_suffix                         = (known after apply)
+      + deregistration_delay               = 90
+      + id                                 = (known after apply)
+      + lambda_multi_value_headers_enabled = false
+      + load_balancing_algorithm_type      = (known after apply)
+      + name                               = "my-project-alb-tg-dev-use1"
+      + port                               = 443
+      + preserve_client_ip                 = (known after apply)
+      + protocol                           = "https"
+      + protocol_version                   = (known after apply)
+      + proxy_protocol_v2                  = false
+      + slow_start                         = 0
+      + tags                               = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-alb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + tags_all                           = {
+          + "Environment" = "dev"
+          + "Name"        = "my-project-alb-tg-dev-use1"
+          + "Owner"       = "my-Project@example.com"
+        }
+      + target_type                        = "ip"
+      + vpc_id                             = (known after apply)
+
+      + health_check {
+          + enabled             = true
+          + healthy_threshold   = 2
+          + interval            = 15
+          + matcher             = "200-399"
+          + path                = "/"
+          + port                = "443"
+          + protocol            = "HTTPS"
+          + timeout             = 10
+          + unhealthy_threshold = 2
+        }
+
+      + stickiness {
+          + cookie_duration = (known after apply)
+          + cookie_name     = (known after apply)
+          + enabled         = (known after apply)
+          + type            = (known after apply)
+        }
+    }
+
+Plan: 75 to add, 0 to change, 0 to destroy.
+
+------------------------------------------------------------------------
+
