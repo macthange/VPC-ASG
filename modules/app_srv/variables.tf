@@ -162,3 +162,29 @@ variable "drop_invalid_header_fields" {
   default     = false
   description = "HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false). The default is false."
 }
+
+
+variable "private_zone_id" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}
+
+
+variable "private_zone_name" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}
+variable "public_zone_id" {
+  type        = string
+  default     = "poc"
+  description = "public_zone_id for LB route53 record"
+}
+
+
+variable "public_zone_name" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}

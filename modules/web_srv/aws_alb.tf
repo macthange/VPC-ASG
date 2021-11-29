@@ -111,3 +111,16 @@ resource "aws_autoscaling_attachment" "target" {
 #  listener_arn    = aws_lb_target_group.web[each.key].arn
 #  certificate_arn = var.additional_certs[count.index]
 #}
+
+resource "aws_route53_record" "alb" {
+  zone_id = var.public_zone_id
+  name    = local.alb_name
+  type    = "CNAME"
+  ttl     = 60
+  records = [aws_lb.web.dns_name]  ##records = [aws_lb.MYALB.dns_name]
+}
+
+output "web_route53_record" {
+  value       = "${aws_route53_record.alb.name}.${var.public_zone_name}"
+  description = "ALB dns_name route53_record "
+}

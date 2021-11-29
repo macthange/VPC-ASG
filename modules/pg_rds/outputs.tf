@@ -23,3 +23,8 @@ output "endpoint" {
   value       = aws_db_instance.postgresql.endpoint
   description = "Public DNS name and port separated by a colon"
 }
+
+output "rds_route53_record" {
+  value       = "${aws_route53_record.database.name}.${var.private_zone_name}"
+  description = "RDS enpoint route53_record "
+}

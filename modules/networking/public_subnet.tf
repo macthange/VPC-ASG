@@ -11,6 +11,33 @@ resource "aws_vpc" "vpc" {
     Environment = var.env
   }
 }
+
+resource "aws_route53_zone" "public" {
+  name    = local.r53_public_zone
+  comment = "This is public route53_zone"
+  
+tags = {
+    Name        = local.r53_public_zone
+    Owner       = var.owner
+    Environment = var.env
+  }
+  
+}
+resource "aws_route53_zone" "private" {
+  name    = local.r53_private_zone
+  comment = "This is private route53_zone"
+
+  vpc {
+    vpc_id = aws_vpc.vpc.id
+  }
+  
+  tags = {
+    Name        = local.r53_private_zone
+    Owner       = var.owner
+    Environment = var.env
+  }
+}
+
 # cidrsubnet(aws_vpc.app_vpc.cidr_block, 8, count.index) this creates /24 
 resource "aws_subnet" "public_subnet" {
   count = var.enabled ? local.resource_count : 0

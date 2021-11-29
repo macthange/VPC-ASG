@@ -175,3 +175,10 @@ resource "aws_cloudwatch_metric_alarm" "database_cpu_credits" {
   ok_actions                = var.ok_actions
   insufficient_data_actions = var.insufficient_data_actions
 }
+resource "aws_route53_record" "database" {
+  zone_id = var.private_zone_id
+  name = aws_db_instance.postgresql.name
+  type = "CNAME"
+  ttl = "300"
+  records = [aws_db_instance.postgresql.endpoint] #aws_db_instance.postgresql.address
+}

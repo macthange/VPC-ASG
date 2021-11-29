@@ -67,3 +67,15 @@ resource "aws_lb_target_group" "app" {
   }
 }
 
+resource "aws_route53_record" "nlb" {
+  zone_id = var.private_zone_id
+  name    = local.nlb_name
+  type    = "CNAME"
+  ttl     = 60
+  records = [aws_lb.app.dns_name]  ##records = [aws_lb.MYALB.dns_name]
+}
+
+output "app_route53_record" {
+  value       = "${aws_route53_record.nlb.name}.${var.private_zone_name}"
+  description = "NLB dns_name route53_record "
+}

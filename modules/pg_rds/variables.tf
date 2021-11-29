@@ -254,3 +254,28 @@ variable "tags" {
   type        = map(string)
   description = "Extra tags to attach to the RDS resources"
 }
+variable "public_zone_id" {
+  type        = string
+  default     = "poc"
+  description = "public_zone_id for LB route53 record"
+}
+
+
+variable "public_zone_name" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}
+
+variable "private_zone_id" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}
+
+
+variable "private_zone_name" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}

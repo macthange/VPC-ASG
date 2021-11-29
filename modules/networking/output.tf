@@ -23,17 +23,17 @@ output "rds_subnet_group" {
 output "rds_subnet_group_name" {
   value = aws_db_subnet_group.rds_subnet.*.name
 }
-/*
-aws_subnet" "database_subnet"
-output "default_sg_id" {
-  value = "${aws_security_group.default.id}"
+
+output "public_zone_name" {
+  value = aws_route53_zone.public.id
+}
+output "public_zone_id" {
+  value = aws_route53_zone.public.id
+}
+output "private_zone_name" {
+  value = aws_route53_zone.private.name
+}
+output "private_zone_id" {
+  value = aws_route53_zone.private.id
 }
 
-output "security_groups_ids" {
-  value = ["${aws_security_group.default.id}"]
-}
-
-output "public_route_table" {
-  value = "${aws_route_table.public.id}"
-}
-*/

@@ -61,6 +61,8 @@ module "app_srv" {
   kms_master_key_arn = module.kms_key.kms_key_arn
   vpc_id             = module.networking.vpc_id
   subnet_ids         = module.networking.public_subnets_id
+  private_zone_id    = module.networking.private_zone_id
+  private_zone_name   = module.networking.private_zone_name
   log_bucket_id      = module.s3_bucket.s3_bucket_id
   image_id           = data.aws_ami.golden_image.id
   security_group     = [module.securit_group.app-sg]
@@ -75,6 +77,8 @@ module "web_srv" {
   kms_master_key_arn = module.kms_key.kms_key_arn
   vpc_id             = module.networking.vpc_id
   subnet_ids         = module.networking.public_subnets_id
+  public_zone_id    = module.networking.public_zone_id
+  public_zone_name    = module.networking.public_zone_name
   log_bucket_id      = module.s3_bucket.s3_bucket_id
   security_group     = [module.securit_group.web-sg]
   alb_security_group = [module.securit_group.alb-sg]
@@ -102,6 +106,7 @@ module "pg_rds" {
   database_password       = random_password.password.result
   database_identifier     = "mytestdb-${var.env}"
   multi_availability_zone = "true"
-
+  private_zone_id    = module.networking.private_zone_id
+  private_zone_name    = module.networking.private_zone_name
 
 }

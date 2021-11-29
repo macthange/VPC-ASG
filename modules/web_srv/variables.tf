@@ -241,3 +241,28 @@ variable "additional_certs" {
   description = "A list of additonal certs to add to the https listerner"
   default     = []
 }
+variable "public_zone_id" {
+  type        = string
+  default     = "poc"
+  description = "public_zone_id for LB route53 record"
+}
+
+
+variable "public_zone_name" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}
+
+variable "private_zone_id" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}
+
+
+variable "private_zone_name" {
+  type        = string
+  default     = "poc"
+  description = "private_zone_id for LB route53 record"
+}

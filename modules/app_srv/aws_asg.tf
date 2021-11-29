@@ -132,3 +132,4 @@ resource "aws_autoscaling_attachment" "target" {
   autoscaling_group_name = aws_autoscaling_group.app.name
   alb_target_group_arn   = aws_lb_target_group.app[each.key].arn
 }
+
