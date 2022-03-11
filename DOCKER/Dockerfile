@@ -9,20 +9,8 @@ ENV DOCKER_CHANNEL=stable \
 RUN apk update
 
 # Install base and dev packages
-RUN apk add --no-cache --virtual .build-deps
-RUN apk add bash
+RUN apk add --no-cache --virtual .build-deps bash make && apk add curl && apk add openssh git nodejs yarn
 
-# Install build packages
-RUN apk add make && apk add curl && apk add openssh
-
-# Install git
-RUN apk add git
-
-# Install nodejs
-RUN apk add nodejs
-
-# Install yarn
-RUN apk add yarn
 
 # Set timezone to UTC by default
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
@@ -32,33 +20,14 @@ RUN apk -Uuv add groff less python py-pip
 RUN pip install awscli
 RUN apk --purge -v del py-pip
 RUN rm /var/cache/apk/*
-RUN apk -v --no-cache --update add \
-        musl-dev \
-        gcc \
-        python3 \
-        python3-dev
-RUN python3 -m ensurepip --upgrade \
-        && pip3 install --upgrade pip
+RUN apk -v --no-cache --update add musl-dev gcc python3 python3-dev        
+RUN python3 -m ensurepip --upgrade && pip3 install --upgrade pip
 RUN pip3 install --upgrade awscli aws-sam-cli
-RUN pip3 uninstall --yes pip \
-        && apk del python3-dev gcc musl-dev
+RUN pip3 uninstall --yes pip && apk del python3-dev gcc musl-dev
 
-RUN apk --update --no-cache add \
-        bash \
-        curl \
-        device-mapper \
-        py-pip \
-        python-dev \
-        iptables \
-        util-linux \
-        ca-certificates \
-        gcc \
-        libc-dev \
-        libffi-dev \
-        openssl-dev \
-        make \
-        && \
-    apk upgrade && \
+RUN apk --update --no-cache add device-mapper iptables util-linux ca-certificates libc-dev  libffi-dev openssl-dev \
+         
+    make &&  apk upgrade && \
     curl -fL "https://download.docker.com/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" | tar zx && \
     mv /docker/* /bin/ && chmod +x /bin/docker* && \
     pip install docker-compose==${DOCKER_COMPOSE_VERSION} && \
